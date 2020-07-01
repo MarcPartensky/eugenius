@@ -1,4 +1,4 @@
-#Eugenius
+# Eugenius
 Eugenius is a Python module that can roughly replace the app [Eugénie](https://www.nexity.fr/eugenie "Eugénie").
 Engenius can control all accessble devices for the Eugénie application. This module is useless if your home is not compatible with Eugénie.
 
@@ -14,7 +14,8 @@ Then copy  `Eugenius.py` of this repository in your Python project.
 
 To import Eugenius from your project :
 ```python
-from Eugenius import Eugenius```
+from Eugenius import Eugenius
+```
 
 ## Feature
 
