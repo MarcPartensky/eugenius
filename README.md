@@ -25,6 +25,7 @@ It all depends on what you can do with your basic Eugenie application but genera
 - Control your shutters of your home
 - Adjust the thermostats of your radiators
 
+All this with Python.
 
 ## Usage
 
@@ -68,8 +69,7 @@ device.exec("setDeployment", 90) #closes 90% of the shutters
 #### List of main commands for zwave:OnOffLightZWaveComponent
 
 ```python
-assert device.controllableName=="zwave:OnOffLightZWaveComponent
-"
+assert device.controllableName=="zwave:OnOffLightZWaveComponent"
 device.exec("off") #swith off the light
 device.exec("on") #switch on the light
 device.exec("onWithTimer", paramToDiscover) #switch on with a timer
