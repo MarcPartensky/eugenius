@@ -76,12 +76,12 @@ import requests,json,logging
 class Cognito:
     """Class to control """
 
-    def __init__(self, username, password, clientID):
+    def __init__(self, username, password):
         self.username = username
         self.password = password
         self.poolRegion = "eu-west-1"
         self.poolID = 'eu-west-1_wj277ucoI'
-        self.clientID = clientID
+        self.clientID = '3mca95jd5ase5lfde65rerovok'
         self.isConnected=False
         self.baseURL = "https://api.egn.prd.aws-nexity.fr/deploy/api/v1/"
 
