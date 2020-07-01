@@ -1,0 +1,5 @@
+.idea/*
+.git/*
+.logs.bat
+client.pyproj
+client.sln
