@@ -255,9 +255,8 @@ class Overkiz :
         data={"actions":[{"deviceURL":element[0], "commands":element[1:]} for element in array]}
         payload = json.dumps(data)
         print("la cmd envoyé : {}".format(payload))
-        #rep = requests.request("POST", self.baseURL + "exec/apply", headers=self.headers, data=payload)
         rep = self.request("POST", "exec/apply", data=payload)
-        newExecution = Execution(rep["id"])
+        newExecution = Execution(rep["execId"])
         self.executions.append(newExecution)
         return newExecution
 
