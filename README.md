@@ -50,6 +50,8 @@ home.devices
 #### Generality
 ```python
 device = home.devices[0] #Let's take the first device
+device.available # bool
+device.enabled # bool
 device.label #Name of the device in Eugénie app
 device.controllableName #interesting name
 
@@ -77,25 +79,28 @@ device.exec("onWithTimer", secondsToWait) #If the light is off, it will come on 
 
 ```
 
-#### Get all available commands for an device
+#### Get all available commands for a device
 
 ```python
 device = home.devices[0] #Let's take the first device
 device.commands #return a dict where keys are commands (str) and value are number of param to execute the command
 ```
+With a light (zwave:OnOffLightZWaveComponent), `device.commands` gives :
+`{'close': 0, 'delayedStopIdentify': 1, 'down': 0, 'getName': 0, 'identify': 0, 'my': 0, 'open': 0, 'refreshMemorized1Position': 0, 'setClosure': 1, 'setDeployment': 1, 'setMemorized1Position': 1, 'setName': 1, 'setPosition': 1, 'setSecuredPosition': 1, 'startIdentify': 0, 'stop': 0, 'stopIdentify': 0, 'up': 0, 'wink': 1}`
+
 
 ### States
-Device can have multiple states. States are usefull if you want, for example, check if a light is on.
+Device can have multiple states. States are useful if you want, for example, check if a light is on.
 ```python
 device.states #return states of device
 #it's a dict where keys are names of state and value are state object
 ```
 
-In general, the states have for attributes value and values
+The possible attributes of a state :
 ```python
 state.value #the current value of the state, sometimes not defined
 state.values #the values that value can take, sometimes not defined
-state.type # may be 'DiscreteState' or 'ContinuousState' always defined
+state.type # may be 'DiscreteState' or 'ContinuousState', always defined
 state.qualifiedName #the name of the state, always defined
 ```
 
@@ -108,6 +113,7 @@ device.states
 device.states['core:OnOffState'].value # 'on' because my light is on
 device.states['core:OnOffState'].values # ['off','on']
 device.states["core:OnOffState"].type # 'DiscreteState'
+device.states['core:OnOffState'].qualifiedName # 'core:OnOffState'
 ```
 
 ### Device URL
