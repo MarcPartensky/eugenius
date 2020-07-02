@@ -76,7 +76,7 @@ import requests,json,logging
 class Cognito:
     """Class to control """
 
-    def __init__(self, username, password):
+    def __init__(self, username:str, password:str):
         self.username = username
         self.password = password
         self.poolRegion = "eu-west-1"
@@ -264,16 +264,14 @@ class Overkiz :
 class Eugenius:
     """class for users"""
 
-    def __init__(self, mailAdress: str, password: str, clientID: str):
-        # todo : recup le client ID ?
+    def __init__(self, mailAdress: str, password: str):
         self.username = mailAdress.replace("@", "_-_")
         self.password = password
-        self.clientID = clientID
         self.overkiz = None
 
     def connect(self):
         """Connect to https API"""
-        self.cognito=Cognito(self.username, self.password, self.clientID)
+        self.cognito=Cognito(self.username, self.password)
         domoticToken=self.cognito.getDomoticToken()
         self.overkiz=Overkiz(self.username,domoticToken)
 
