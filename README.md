@@ -50,7 +50,7 @@ home.devices
 ```python
 device = home.devices[0] #Let's take the first device
 device.label #Name of the device in Eugénie app
-device.controllableName #interesting name 
+device.controllableName #interesting name
 
 ```
 For each different `controllableName`, there are different possible commands.
@@ -72,11 +72,25 @@ device.exec("setDeployment", 90) #closes 90% of the shutters
 assert device.controllableName=="zwave:OnOffLightZWaveComponent"
 device.exec("off") #swith off the light
 device.exec("on") #switch on the light
-device.exec("onWithTimer", paramToDiscover) #switch on with a timer
+device.exec("setOnOff","on") #switch on the light also works with "off"
+secondsToWait=5 #secondsToWait must be an int between 5 and 14400
+device.exec("onWithTimer", secondsToWait) #If the light is off, it will come on instantly. If the light is on, it will turn off after 5 seconds.
+
 ```
+
+
 
 #### Get all available commands for an device
 ````python
 device = home.devices[0] #Let's take the first device
 print(device.commands)
+```
+
+### States
+
+#### Example with a zwave:OnOffLightZWaveComponent
+
+```python
+device.states['core:OnOffState'].value # return 'on' xor 'off'
+device.states['core:OnOffState'].values # return ['off','on']
 ```
