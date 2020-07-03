@@ -36,10 +36,10 @@ class Device :
 
     def exec(self, cmd, *params):
         if cmd not in self.commands :
-            logging.error("{} n'est pas une commande de {} ({})".format(cmd, self.controllableName, self.label))
+            logging.error("{} is not a command of {} ({})".format(cmd, self.controllableName, self.label))
             raise Exception()
         if len(params)!=self.commands[cmd] :
-            logging.error("la cmd {} demande {} param(s), {} donnée(s)".format(cmd, self.commands[cmd], len(params)))
+            logging.error("The command {} requires {} param(s), {} given".format(cmd, self.commands[cmd], len(params)))
             raise Exception()
         #todo check la valeur des params
         if params :
