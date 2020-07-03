@@ -34,7 +34,7 @@ class Device :
             self.states[state['name']].set(state)
 
 
-    def exec(self, cmd, *params):#todo prendre en compte les params
+    def exec(self, cmd, *params):
         if cmd not in self.commands :
             logging.error("{} n'est pas une commande de {} ({})".format(cmd, self.controllableName, self.label))
             raise Exception()
@@ -67,8 +67,6 @@ class Home :
         self.devices=[Device(sdk,device) for device in setupJson["devices"]]
         self.getDeviceByURL={d.deviceURL:d for d in self.devices}
 
-    def update(self,dict_):
-        pass
 
 
 from warrant.aws_srp import AWSSRP
