@@ -1,3 +1,17 @@
+
+class Error(Exception):  # TODO : mettre ça dans exceptions.py
+    """Base class for exceptions in this module."""
+    pass
+
+
+class EugenieError(Error):
+    pass
+
+
+class OverkizError(Error):
+    pass
+
+
 import time
 class Execution :
     def __init__(self, execId):
@@ -36,11 +50,10 @@ class Device :
 
     def exec(self, cmd, *params):
         if cmd not in self.commands :
-            logging.error("{} is not a command of {} ({})".format(cmd, self.controllableName, self.label))
-            raise Exception()
+            raise OverkizError("{} is not a command of {} ({})".format(cmd, self.controllableName, self.label))
+
         if len(params)!=self.commands[cmd] :
-            logging.error("The command {} requires {} param(s), {} given".format(cmd, self.commands[cmd], len(params)))
-            raise Exception()
+            raise OverkizError("The command {} requires {} param(s), {} given".format(cmd, self.commands[cmd], len(params)))
         #todo check la valeur des params
         if params :
             return self.overkiz.exec(self.deviceURL, {"type": self.type, "name": cmd, "parameters":params})
@@ -57,7 +70,7 @@ class Device :
             for stateUpdate in dict_["deviceStates"] :
                 self.states[stateUpdate["name"]].update(stateUpdate)
         else :
-            logging.error("The event {} is not yet supported".format(dict_["name"]))
+            logging.warning("The event {} is not yet supported".format(dict_["name"]))
 
 from collections import deque
 class Home :
@@ -82,6 +95,8 @@ class Cognito:
         self.clientID = '3mca95jd5ase5lfde65rerovok'
         self.isConnected=False
         self.baseURL = "https://api.egn.prd.aws-nexity.fr/deploy/api/v1/"
+        self.domoticState = None
+        self.cognitoTokens = None
 
     def getTokens(self):
         """Authenticates with Cognito. Return Cognito's tokens as a dict.
@@ -96,7 +111,7 @@ class Cognito:
 
     def getDomoticToken(self):
         """Return the domotic token. The dotmotic token is required to connect to the Overkiz API"""
-        if not(self.isConnected) :
+        if not self.isConnected :
             self.getTokens()
         headers = {
           'authorization': self.cognitoTokens['IdToken'],
@@ -110,6 +125,9 @@ class Cognito:
 
         response = requests.request("GET", self.baseURL+"users/current", headers=headers, data = {})
         self.info=json.loads(response.text)
+        if 'message' in self.info:
+            raise EugenieError(
+                'Eugenie is unavailable : {}\nMake sure the application works.'.format(self.info['message']))
         #todo : "name":"Ventilation M\xc3\xa9canique Contr\xc3\xb4l\xc3\xa9e (VMC)"
         logging.info("Connected as {} {} {}".format(self.info["profile"]["civility"],self.info["profile"]["firstName"],self.info["profile"]["lastName"]))
         self.domoticState=self.info["profile"]["domoticState"]
@@ -132,7 +150,7 @@ class Cognito:
 
         return self.domoticToken
 
-import urllib, threading
+import urllib, threading, sys
 from json import JSONDecodeError
 class Overkiz :
     def __init__(self,username, domoticToken):
@@ -146,9 +164,14 @@ class Overkiz :
         self.eventIgnored = ["GatewaySynchronizationStartedEvent","GatewaySynchronizationEndedEvent"]
     def fecth(self):
         self.keepAlive = True
-        while self.keepAlive :
-            rep = self.request("POST", "events/{}/fetch".format(self.token))
-            self.update(rep)
+        while self.keepAlive:
+            try:
+                rep = self.request("POST", "events/{}/fetch".format(self.token))
+                self.update(rep)
+            except: # TODO refaire c moche
+                e = sys.exc_info()[0]
+                logging.error("Error dans le fetch {}".format(e))
+                time.sleep(2)
 
     def disconnect(self):
         self.keepAlive=False
@@ -161,11 +184,11 @@ class Overkiz :
                 continue
 
             if element['name']=="ExecutionStateChangedEvent" :
-                if element['execId'] in tmpExec :
+                if element['execId'] in tmpExec:
                     tmpExec[element['execId']].update(element)
                     continue
                 else :
-                    logging.error("Unexpected Execution information received")
+                    #logging.warning("Unexpected Execution information received")
                     newExecution=Execution(element['execId'])
                     newExecution.update(element)
                     self.executions.append(newExecution)
@@ -191,8 +214,8 @@ class Overkiz :
         }
         response = requests.request("POST", self.baseURL + "login", headers=headers, data=payload)
         if not (json.loads(response.text)["success"]):
-            logging.error("Unable to connect to Overkiz API : {}".format(response.text))
-        print(response.text)
+            raise OverkizError("Unable to connect to Overkiz API : {}".format(response.text))
+        #print(response.text)
         setCookie = response.headers['Set-Cookie']
         #setCookie's format : "JSESSIONID=5D0D507B906B631A1D4AE7970C5B12DC; Path=/enduser-mobile-web; Secure; HttpOnly"
         self.jsessionid = setCookie[11:].split(";")[0]
@@ -227,14 +250,12 @@ class Overkiz :
         try :
             repJSON = json.loads(response.text)
             if ("errorCode" in repJSON) :
-                logging.error("[Overkiz API error] {} : {}".format(repJSON["errorCode"], repJSON["error"]))
-                raise Exception()  # todo faire de vraies esception
-            else :
+                raise OverkizError("{} : {}".format(repJSON["errorCode"], repJSON["error"]))
+            else:
                 return repJSON
 
         except JSONDecodeError :
-            logging.error("Unexpected response from Overkiz API url={} method={}\nreponse.text={}".format(url, method, response.text))
-            raise Exception()
+            raise OverkizError("Unexpected response from Overkiz API url={} method={}\nreponse.text={}".format(url, method, response.text))
 
     def exec(self, deviceURL, *dictcmd):
         """Ask the device at the adress deviceURL to excute commands"""
